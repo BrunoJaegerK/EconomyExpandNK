@@ -12,7 +12,7 @@ EconomyExpandNK funciona junto a [EconomyAPI](https://cloudburstmc.org/resources
 - Saldos vinculados a UUID.
 - Comandos de consulta, transferencia y administración.
 - API Java para otros plugins.
-- Almacenamiento MySQL local (predeterminado), SQLite, H2, MongoDB y YAML.
+- Almacenamiento H2 integrado (predeterminado), SQLite, MySQL, MongoDB y YAML.
 - Mensajes personalizables en `messages.yml`.
 - Recarga de configuración y monedas.
 - GitHub Actions para compilar automáticamente.
@@ -21,39 +21,18 @@ EconomyExpandNK funciona junto a [EconomyAPI](https://cloudburstmc.org/resources
 
 - Servidor Nukkit compatible con Cloudburst.
 - Java 8 o superior (el workflow de compilación utiliza Java 17).
-- MySQL o MariaDB local escuchando en `127.0.0.1:3306`. EconomyAPI es opcional y puede permanecer instalado.
+- No requiere servidor de base de datos externo: H2 está integrado. EconomyAPI es opcional y puede permanecer instalado.
 
 ## Instalación
 
 1. Descarga el JAR compilado desde **Actions** o Releases.
 2. Coloca el archivo en la carpeta `plugins/`.
-3. Crea la base de datos MySQL indicada abajo.
-4. Inicia el servidor para generar los archivos de configuración.
-5. Si tu MySQL usa credenciales distintas a las predeterminadas, edita `plugins/EconomyExpandNK/config.yml`.
-6. Reinicia el servidor después de cambiar el proveedor de almacenamiento.
+3. Inicia el servidor para generar los archivos de configuración y la base H2 automáticamente.
+4. Reinicia el servidor después de cambiar el proveedor de almacenamiento.
 
 ## Configuración
 
-### MySQL local (predeterminado)
-
-El plugin intenta conectarse por defecto a MySQL en el mismo equipo/entorno donde se ejecuta Nukkit:
-
-- Host: `127.0.0.1`
-- Puerto: `3306`
-- Base de datos: `economyexpand`
-- Usuario: `root`
-- Contraseña: vacía
-- SSL: desactivado
-
-Crea la base de datos antes de iniciar el plugin:
-
-```sql
-CREATE DATABASE economyexpand
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-```
-
-Si tu instalación local de MySQL/MariaDB tiene contraseña para `root`, modifica `username` y `password` en el archivo generado. No uses una cuenta root sin contraseña en un servidor expuesto a Internet; crea un usuario dedicado con permisos únicamente sobre la base `economyexpand`.
+H2 es el almacenamiento predeterminado. Se ejecuta dentro del plugin y crea automáticamente su archivo local; no necesitas MySQL, MariaDB ni MongoDB.
 
 ### `config.yml`
 
@@ -61,19 +40,9 @@ Si tu instalación local de MySQL/MariaDB tiene contraseña para `root`, modific
 language: es
 default-currency: crystals
 storage:
-  type: mysql
+  type: h2
   sql:
-    mysql:
-      host: 127.0.0.1
-      port: 3306
-      database: economyexpand
-      username: root
-      password: ""
-      use-ssl: false
-  mongodb:
-    uri: mongodb://127.0.0.1:27017
-    database: economyexpand
-    collection: wallets
+    h2-file: wallets-h2
 ```
 
 ### `currencies.yml`
@@ -149,11 +118,11 @@ Ejemplos:
 
 ## Almacenamiento
 
-Selecciona el proveedor en `config.yml`. **Haz una copia de seguridad antes de cambiar de backend**; el plugin no migra automáticamente los datos entre proveedores.
+Selecciona el proveedor en `config.yml`. H2 es el predeterminado y no necesita servicios externos. **Haz una copia de seguridad antes de cambiar de backend**; el plugin no migra automáticamente los datos entre proveedores.
 
-### MySQL (predeterminado)
+### MySQL (opcional)
 
-Usa el MySQL/MariaDB local con los parámetros descritos arriba. La base de datos `economyexpand` debe existir antes del arranque.
+Usa un servidor MySQL/MariaDB configurado por el administrador. La base de datos debe existir antes del arranque.
 
 ### SQLite
 
@@ -164,7 +133,7 @@ storage:
     sqlite-file: wallets.db
 ```
 
-### H2
+### H2 (predeterminado)
 
 ```yaml
 storage:
@@ -172,6 +141,8 @@ storage:
   sql:
     h2-file: wallets-h2
 ```
+
+La base se guarda en `plugins/EconomyExpandNK/wallets-h2.mv.db`. No compartas este archivo con otros plugins: cada plugin debe tener su propia base.
 
 ### MongoDB
 
