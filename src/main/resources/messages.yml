@@ -1,0 +1,8 @@
+prefix: "§8[§bEconomyExpand§8] §r"
+balance: "§a{player} tiene {symbol}{balance} {currency}."
+balance-self: "§aTu saldo: {symbol}{balance} {currency}."
+unknown-currency: "§cMoneda desconocida o deshabilitada: {currency}"
+no-permission: "§cNo tienes permiso."
+usage: "§e/ecx balance [moneda] | /ecx balance <jugador> [moneda] | /ecx reload | /ecx help"
+reloaded: "§aConfiguración recargada."
+error: "§cNo se pudo completar la operación."
