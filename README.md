@@ -25,10 +25,11 @@ EconomyExpandNK funciona junto a [EconomyAPI](https://cloudburstmc.org/resources
 
 ## Instalación
 
-1. Descarga el JAR compilado desde **Actions** o Releases.
-2. Coloca el archivo en la carpeta `plugins/`.
-3. Inicia el servidor para generar los archivos de configuración y la base H2 automáticamente.
-4. Reinicia el servidor después de cambiar el proveedor de almacenamiento.
+1. Descarga el JAR compilado desde [GitHub Actions](https://github.com/BrunoJaegerK/EconomyExpandNK/actions) o desde Releases.
+2. Coloca `EconomyExpandNK.jar` en la carpeta `plugins/`.
+3. (Opcional) Para usar placeholders, instala también [PlaceholderAPI de CreeperFace para Nukkit](https://github.com/Creeperface01/PlaceholderAPI-nukkit). No uses la versión de Bukkit/Paper.
+4. Inicia el servidor. EconomyExpandNK generará sus archivos de configuración y la base H2 automáticamente.
+5. Si modificas las monedas disponibles o el proveedor de almacenamiento, reinicia el servidor para aplicar los cambios y registrar los placeholders correspondientes.
 
 ## Configuración
 
@@ -166,22 +167,35 @@ Los datos de YAML se guardan en `wallets.yml`. Para producción, configura auten
 
 ## Placeholders (PlaceholderAPI de Nukkit)
 
-EconomyExpandNK se integra opcionalmente con **PlaceholderAPI de CreeperFace para Nukkit** (no con la edición de Bukkit/Paper). Instala también ese plugin en el servidor. Si no está instalado, EconomyExpandNK funciona normalmente y simplemente omite el registro de placeholders.
+EconomyExpandNK ofrece integración opcional con [PlaceholderAPI de CreeperFace para Nukkit](https://github.com/Creeperface01/PlaceholderAPI-nukkit). Es una integración para Nukkit: **no es compatible con la edición de PlaceholderAPI para Bukkit/Paper**.
 
-Los placeholders de saldo son sensibles al jugador que visualiza el texto y se generan automáticamente para cada moneda habilitada en `currencies.yml`. Para una moneda con ID `crystals`:
+Instala PlaceholderAPI en la carpeta `plugins/` junto con EconomyExpandNK. Si PlaceholderAPI no está instalado, la economía secundaria seguirá funcionando; únicamente no se registrarán los placeholders.
 
-| Placeholder | Resultado |
-|---|---|
-| `%economyexpand_balance%` | Saldo de la moneda predeterminada del jugador. |
-| `%economyexpand_balance_crystals%` | Saldo numérico de cristales. |
-| `%economyexpand_balance_formatted_crystals%` | Símbolo seguido del saldo, por ejemplo `✦150`. |
-| `%economyexpand_symbol_crystals%` | Símbolo configurado para cristales. |
-| `%economyexpand_name_crystals%` | Nombre configurado para cristales. |
-| `%economyexpand_total_currencies%` | Cantidad de monedas habilitadas. |
+### Placeholders disponibles
 
-Si añades una moneda llamada `tokens`, también estarán disponibles automáticamente `%economyexpand_balance_tokens%`, `%economyexpand_balance_formatted_tokens%`, `%economyexpand_symbol_tokens%` y `%economyexpand_name_tokens%`.
+Los placeholders de saldo son específicos del jugador que visualiza el texto. Los placeholders de moneda se registran automáticamente para cada moneda habilitada al iniciar el servidor.
 
-El sufijo usa el ID de la moneda en minúsculas; los caracteres que no sean letras, números o guion bajo se convierten en guion bajo. Después de añadir monedas nuevas, reinicia el servidor para registrar sus placeholders.
+Para la moneda cuyo ID es `crystals`:
+
+| Placeholder | Descripción | Ejemplo |
+|---|---|---|
+| `%economyexpand_balance%` | Saldo del jugador en la moneda predeterminada. | `150` |
+| `%economyexpand_balance_crystals%` | Saldo numérico del jugador en cristales. | `150` |
+| `%economyexpand_balance_formatted_crystals%` | Símbolo seguido del saldo. | `✦150` |
+| `%economyexpand_symbol_crystals%` | Símbolo configurado para cristales. | `✦` |
+| `%economyexpand_name_crystals%` | Nombre visible de la moneda. | `Cristales` |
+| `%economyexpand_total_currencies%` | Cantidad total de monedas habilitadas. | `2` |
+
+Si en `currencies.yml` tienes otra moneda con ID `tokens`, también se registran automáticamente:
+
+- `%economyexpand_balance_tokens%`
+- `%economyexpand_balance_formatted_tokens%`
+- `%economyexpand_symbol_tokens%`
+- `%economyexpand_name_tokens%`
+
+El placeholder general `%economyexpand_balance%` siempre consulta la moneda indicada en `default-currency` (o la primera moneda habilitada si la predeterminada no está disponible).
+
+**Importante:** los IDs se convierten a minúsculas para construir los nombres. Cualquier carácter que no sea una letra, número o guion bajo se sustituye por guion bajo. Los placeholders se registran durante el inicio del plugin; después de agregar, quitar o renombrar monedas, reinicia el servidor para actualizar el registro.
 
 ## API para desarrolladores
 
