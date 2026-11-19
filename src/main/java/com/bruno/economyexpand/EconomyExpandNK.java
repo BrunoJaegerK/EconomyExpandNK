@@ -5,9 +5,11 @@ import com.bruno.economyexpand.api.Currency;
 import com.bruno.economyexpand.api.SecondaryEconomy;
 import com.bruno.economyexpand.storage.WalletStorage;
 import com.bruno.economyexpand.storage.YamlWalletStorage;
+import com.bruno.economyexpand.storage.SqlWalletStorage;
+import com.bruno.economyexpand.storage.MongoWalletStorage;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class EconomyExpandNK extends PluginBase {
     private static EconomyExpandNK instance;
@@ -17,41 +19,56 @@ public class EconomyExpandNK extends PluginBase {
     private cn.nukkit.utils.Config messages;
     public static EconomyExpandNK getInstance(){return instance;}
     public SecondaryEconomy getEconomy(){return economy;}
-    public Currency currency(String id){return currencies.get(id.toLowerCase(Locale.ROOT));}
+    public Currency currency(String id){return id==null?null:currencies.get(id.toLowerCase(Locale.ROOT));}
     @Override public void onEnable(){
-        instance=this;
-        saveDefaultConfig(); saveResource("currencies.yml",false); saveResource("messages.yml",false);
-        reloadFiles();
+        instance=this;saveDefaultConfig();saveResource("currencies.yml",false);saveResource("messages.yml",false);reloadFiles();
+        try {storage=createStorage();} catch(Exception ex){getLogger().error("No se pudo inicializar el almacenamiento",ex);getServer().getPluginManager().disablePlugin(this);return;}
+        economy=new EconomyImpl();getServer().getCommandMap().register("economyexpand",new EconomyCommand(this));
+        getLogger().info("EconomyExpandNK habilitado ("+currencies.size()+" monedas, storage="+getConfig().getString("storage.type","yaml")+")");
+    }
+    private WalletStorage createStorage() throws Exception {
         String type=getConfig().getString("storage.type","yaml").toLowerCase(Locale.ROOT);
-        if(!"yaml".equals(type)){getLogger().warning("Backend '"+type+"' no está implementado aún; usando YAML.");}
-        storage=new YamlWalletStorage(getDataFolder()+"/wallets.yml");
-        economy=new EconomyImpl();
-        getServer().getCommandMap().register("economyexpand",new EconomyCommand(this));
-        getLogger().info("EconomyExpandNK habilitado con "+currencies.size()+" monedas.");
+        if("yaml".equals(type))return new YamlWalletStorage(getDataFolder()+"/wallets.yml");
+        if("sqlite".equals(type)){
+            String file=getConfig().getString("storage.sql.sqlite-file","wallets.db");
+            return new SqlWalletStorage("jdbc:sqlite:"+getDataFolder()+"/"+file,null,null);
+        }
+        if("h2".equals(type)){
+            String file=getConfig().getString("storage.sql.h2-file","wallets-h2");
+            return new SqlWalletStorage("jdbc:h2:file:"+getDataFolder()+"/"+file,null,null);
+        }
+        if("mysql".equals(type)){
+            String host=getConfig().getString("storage.sql.mysql.host","127.0.0.1");
+            int port=getConfig().getInt("storage.sql.mysql.port",3306);
+            String db=getConfig().getString("storage.sql.mysql.database","economyexpand");
+            String user=getConfig().getString("storage.sql.mysql.username","root");
+            String pass=getConfig().getString("storage.sql.mysql.password","");
+            boolean ssl=getConfig().getBoolean("storage.sql.mysql.use-ssl",false);
+            String url="jdbc:mysql://"+host+":"+port+"/"+db+"?useSSL="+ssl+"&serverTimezone=UTC";
+            return new SqlWalletStorage(url,user,pass);
+        }
+        if("mongodb".equals(type)){
+            return new MongoWalletStorage(getConfig().getString("storage.mongodb.uri","mongodb://127.0.0.1:27017"),
+                getConfig().getString("storage.mongodb.database","economyexpand"),
+                getConfig().getString("storage.mongodb.collection","wallets"));
+        }
+        throw new IllegalArgumentException("Unknown storage provider: "+type);
     }
     public void reloadFiles(){
-        reloadConfig();
-        currencies.clear();
+        reloadConfig();currencies.clear();
         cn.nukkit.utils.Config cfg=new cn.nukkit.utils.Config(getDataFolder()+"/currencies.yml",cn.nukkit.utils.Config.YAML);
         Map<?,?> root=cfg.get("currencies") instanceof Map?(Map<?,?>)cfg.get("currencies"):Collections.emptyMap();
         for(Map.Entry<?,?> entry:root.entrySet()){
-            String id=String.valueOf(entry.getKey()).toLowerCase(Locale.ROOT);
-            if(!(entry.getValue() instanceof Map))continue;
-            Map<?,?> m=(Map<?,?>)entry.getValue();
-            boolean enabled=bool(m.get("enabled"),true);
-            int decimals=Math.max(0,Math.min(8,integer(m.get("decimals"),0)));
-            Currency c=new Currency(id,str(m.get("name"),id),str(m.get("symbol"),""),str(m.get("singular"),id),
-                str(m.get("plural"),id),decimals,decimal(m.get("starting-balance"),BigDecimal.ZERO),
-                decimal(m.get("max-balance"),new BigDecimal("999999999")),enabled);
+            String id=String.valueOf(entry.getKey()).toLowerCase(Locale.ROOT);if(!(entry.getValue() instanceof Map))continue;
+            Map<?,?> m=(Map<?,?>)entry.getValue();int decimals=Math.max(0,Math.min(8,integer(m.get("decimals"),0)));
+            Currency c=new Currency(id,str(m.get("name"),id),str(m.get("symbol"),""),str(m.get("singular"),id),str(m.get("plural"),id),
+                decimals,decimal(m.get("starting-balance"),BigDecimal.ZERO),decimal(m.get("max-balance"),new BigDecimal("999999999")),bool(m.get("enabled"),true));
             currencies.put(id,c);
         }
         messages=new cn.nukkit.utils.Config(getDataFolder()+"/messages.yml",cn.nukkit.utils.Config.YAML);
     }
     public String message(String key){return messages.getString(key,"§cMissing message: "+key);}
-    public String render(String key,Map<String,String> values){
-        String result=message(key); for(Map.Entry<String,String> e:values.entrySet())result=result.replace("{"+e.getKey()+"}",e.getValue());
-        return message("prefix")+result;
-    }
+    public String render(String key,Map<String,String> values){String result=message(key);for(Map.Entry<String,String> e:values.entrySet())result=result.replace("{"+e.getKey()+"}",e.getValue());return message("prefix")+result;}
     private static String str(Object o,String d){return o==null?d:String.valueOf(o);}
     private static int integer(Object o,int d){try{return Integer.parseInt(String.valueOf(o));}catch(Exception e){return d;}}
     private static boolean bool(Object o,boolean d){return o==null?d:Boolean.parseBoolean(String.valueOf(o));}
@@ -60,7 +77,7 @@ public class EconomyExpandNK extends PluginBase {
     private class EconomyImpl implements SecondaryEconomy {
         @Override public Currency getCurrency(String id){return currency(id);}
         @Override public Collection<Currency> getCurrencies(){return Collections.unmodifiableCollection(currencies.values());}
-        private Currency require(String id){Currency c=currency(id);if(c==null||!c.isEnabled())throw new IllegalArgumentException("Currency not found/disabled: "+id);return c;}
+        private Currency require(String id){Currency c=currency(id);if(c==null||!c.isEnabled())throw new IllegalArgumentException("Currency not found or disabled: "+id);return c;}
         @Override public synchronized BigDecimal getBalance(UUID p,String id){Currency c=require(id);return storage.read(p,c.getId(),c.getStartingBalance()).setScale(c.getDecimals(),java.math.RoundingMode.DOWN);}
         @Override public synchronized boolean deposit(UUID p,String id,BigDecimal a){if(!valid(a))return false;Currency c=require(id);BigDecimal n=getBalance(p,id).add(c.normalize(a));if(n.compareTo(c.getMaxBalance())>0)return false;storage.write(p,id,n);return true;}
         @Override public synchronized boolean withdraw(UUID p,String id,BigDecimal a){if(!valid(a))return false;Currency c=require(id);BigDecimal old=getBalance(p,id),n=old.subtract(c.normalize(a));if(n.signum()<0)return false;storage.write(p,id,n);return true;}
