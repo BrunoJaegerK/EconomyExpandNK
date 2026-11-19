@@ -1,4 +1,5 @@
 language: es
+default-currency: crystals
 storage:
   type: yaml # yaml | sqlite | h2 | mysql | mongodb
   sql:
