@@ -20,6 +20,7 @@ public class EconomyExpandNK extends PluginBase {
     public static EconomyExpandNK getInstance(){return instance;}
     public SecondaryEconomy getEconomy(){return economy;}
     public Currency currency(String id){return id==null?null:currencies.get(id.toLowerCase(Locale.ROOT));}
+    public String defaultCurrency(){String preferred=getConfig().getString("default-currency","crystals");Currency c=currency(preferred);if(c!=null&&c.isEnabled())return preferred;for(Currency item:currencies.values())if(item.isEnabled())return item.getId();return preferred;}
     @Override public void onEnable(){
         instance=this;saveDefaultConfig();saveResource("currencies.yml",false);saveResource("messages.yml",false);reloadFiles();
         try {storage=createStorage();} catch(Exception ex){getLogger().error("No se pudo inicializar el almacenamiento",ex);getServer().getPluginManager().disablePlugin(this);return;}
