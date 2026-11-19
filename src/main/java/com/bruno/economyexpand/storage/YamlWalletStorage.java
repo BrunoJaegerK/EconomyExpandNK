@@ -7,7 +7,7 @@ import java.util.UUID;
 public class YamlWalletStorage implements WalletStorage {
     private final Config data;
     public YamlWalletStorage(String file){ data=new Config(file, Config.YAML); }
-    private String key(UUID uuid,String currency){return uuid.toString()+"."+currency.toLowerCase();}
+    private String key(UUID uuid,String currency){return uuid.toString()+"|"+currency.toLowerCase();}
     @Override public synchronized BigDecimal read(UUID uuid,String currency,BigDecimal fallback){
         Object value=data.get(key(uuid,currency)); if(value==null)return fallback;
         try{return new BigDecimal(String.valueOf(value));}catch(Exception ignored){return fallback;}
