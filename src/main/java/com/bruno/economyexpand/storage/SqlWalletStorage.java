@@ -19,15 +19,15 @@ public class SqlWalletStorage implements WalletStorage {
 
     private void loadDriver(String url) throws SQLException {
         String driver;
-        if (url.startsWith("jdbc:mysql:")) driver = "com.mysql.cj.jdbc.Driver";
-        else if (url.startsWith("jdbc:sqlite:")) driver = "org.sqlite.JDBC";
-        else if (url.startsWith("jdbc:h2:")) driver = "org.h2.Driver";
+        if (url.startsWith("jdbc:mysql:")) driver = "com.bruno.economyexpand.libs.mysql.cj.jdbc.Driver";
+        else if (url.startsWith("jdbc:sqlite:")) driver = "com.bruno.economyexpand.libs.sqlite.JDBC";
+        else if (url.startsWith("jdbc:h2:")) driver = "com.bruno.economyexpand.libs.h2.Driver";
         else throw new SQLException("Unsupported JDBC URL: " + url);
         try {
-            Class.forName(driver);
+            Class.forName(driver, true, getClass().getClassLoader());
         } catch (ClassNotFoundException exception) {
-            throw new SQLException("JDBC driver not found in EconomyExpandNK.jar: " + driver
-                + ". Download the latest shaded plugin JAR and replace the old one.", exception);
+            throw new SQLException("No se encontró el driver JDBC aislado dentro de EconomyExpandNK: " + driver
+                + ". Comprueba que instalaste el JAR sombreado más reciente.", exception);
         }
     }
 
