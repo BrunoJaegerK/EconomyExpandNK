@@ -25,33 +25,33 @@ public class EconomyExpandNK extends PluginBase {
         instance=this;saveDefaultConfig();saveResource("currencies.yml",false);saveResource("messages.yml",false);reloadFiles();
         try {storage=createStorage();} catch(Exception ex){getLogger().error("No se pudo inicializar el almacenamiento",ex);getServer().getPluginManager().disablePlugin(this);return;}
         economy=new EconomyImpl();getServer().getCommandMap().register("economyexpand",new EconomyCommand(this));
-        getLogger().info("EconomyExpandNK habilitado ("+currencies.size()+" monedas, storage="+getConfig().getString("storage.type","yaml")+")");
+        getLogger().info("EconomyExpandNK habilitado ("+currencies.size()+" monedas, storage="+getConfig().getSection("storage").getString("type","yaml")+")");
     }
     private WalletStorage createStorage() throws Exception {
-        String type=getConfig().getString("storage.type","yaml").toLowerCase(Locale.ROOT);
+        cn.nukkit.utils.ConfigSection storageCfg=getConfig().getSection("storage");\n        String type=storageCfg.getString("type","yaml").toLowerCase(Locale.ROOT);\n        cn.nukkit.utils.ConfigSection sqlCfg=storageCfg.getSection("sql");\n        cn.nukkit.utils.ConfigSection mysqlCfg=sqlCfg.getSection("mysql");\n        cn.nukkit.utils.ConfigSection mongoCfg=storageCfg.getSection("mongodb");
         if("yaml".equals(type))return new YamlWalletStorage(getDataFolder()+"/wallets.yml");
         if("sqlite".equals(type)){
-            String file=getConfig().getString("storage.sql.sqlite-file","wallets.db");
+            String file=sqlCfg.getString("sqlite-file","wallets.db");
             return new SqlWalletStorage("jdbc:sqlite:"+getDataFolder()+"/"+file,null,null);
         }
         if("h2".equals(type)){
-            String file=getConfig().getString("storage.sql.h2-file","wallets-h2");
+            String file=sqlCfg.getString("h2-file","wallets-h2");
             return new SqlWalletStorage("jdbc:h2:file:"+getDataFolder()+"/"+file,null,null);
         }
         if("mysql".equals(type)){
-            String host=getConfig().getString("storage.sql.mysql.host","127.0.0.1");
-            int port=getConfig().getInt("storage.sql.mysql.port",3306);
-            String db=getConfig().getString("storage.sql.mysql.database","economyexpand");
-            String user=getConfig().getString("storage.sql.mysql.username","root");
-            String pass=getConfig().getString("storage.sql.mysql.password","");
-            boolean ssl=getConfig().getBoolean("storage.sql.mysql.use-ssl",false);
+            String host=mysqlCfg.getString("host","127.0.0.1");
+            int port=mysqlCfg.getInt("port",3306);
+            String db=mysqlCfg.getString("database","economyexpand");
+            String user=mysqlCfg.getString("username","root");
+            String pass=mysqlCfg.getString("password","");
+            boolean ssl=mysqlCfg.getBoolean("use-ssl",false);
             String url="jdbc:mysql://"+host+":"+port+"/"+db+"?useSSL="+ssl+"&serverTimezone=UTC";
             return new SqlWalletStorage(url,user,pass);
         }
         if("mongodb".equals(type)){
-            return new MongoWalletStorage(getConfig().getString("storage.mongodb.uri","mongodb://127.0.0.1:27017"),
-                getConfig().getString("storage.mongodb.database","economyexpand"),
-                getConfig().getString("storage.mongodb.collection","wallets"));
+            return new MongoWalletStorage(mongoCfg.getString("uri","mongodb://127.0.0.1:27017"),
+                mongoCfg.getString("database","economyexpand"),
+                mongoCfg.getString("collection","wallets"));
         }
         throw new IllegalArgumentException("Unknown storage provider: "+type);
     }
