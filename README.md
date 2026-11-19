@@ -1,51 +1,41 @@
 # EconomyExpandNK
-**Secondary multi-currency economy plugin for Nukkit** by **BrunoJaegerK**.
+**Secondary multi-currency economy for Nukkit** by **BrunoJaegerK**.
 
-EconomyExpandNK is designed to run alongside [EconomyAPI](https://cloudburstmc.org/resources/economyapi.14/) without replacing its primary balance. It manages its own named currencies, balances and persistence.
-
-> Project status: initial implementation. YAML storage and core wallet API are included; database backends and command surface are being developed. Treat this build as experimental and back up player data before testing on a production server.
+EconomyExpandNK runs alongside [EconomyAPI](https://cloudburstmc.org/resources/economyapi.14/) without replacing its primary balance. It provides configurable secondary wallets and its own storage.
 
 ## Features
-- Currency definitions in `currencies.yml`: ID, display name, symbol, singular/plural, precision, starting balance, maximum balance, enabled flag.
-- UUID-based accounts; online/offline account operations.
-- Balance, deposit, withdrawal, set and transfer methods in Java API.
-- YAML storage provider in this first build.
-- Configurable language/messages.
-- Maven build and GitHub Actions artifact.
-- Coexists with EconomyAPI; does not alter its balances or intercept its commands.
+- Configurable currencies in `currencies.yml`: IDs, display name, symbol, singular/plural, precision, starting and maximum balance.
+- UUID-based wallets; API supports offline UUIDs.
+- Balance, deposit, withdrawal, set and transfer methods.
+- YAML, SQLite, H2, MySQL and MongoDB storage.
+- UTF-8 configurable messages.
+- GitHub Actions Maven build.
 
 ## Requirements
-- Nukkit server API (compatible with the Cloudburst Nukkit API line).
-- Java 8+ runtime; CI builds on Java 17.
-- EconomyAPI is optional and may remain installed. It is not a hard dependency.
+- Cloudburst Nukkit API compatible server.
+- Java 8+ runtime (CI builds with Java 17).
+- EconomyAPI is optional and can remain installed. EconomyExpandNK neither intercepts its commands nor changes its balances.
 
-## Installation
-1. Download the JAR from the Actions artifact or a release.
-2. Put it in `plugins/`.
-3. Start the server once to generate configuration files.
-4. Edit `plugins/EconomyExpandNK/currencies.yml` and `messages.yml`.
-5. Restart the server after changing currency definitions.
+## Install
+1. Download the JAR from the Actions artifact/release.
+2. Put it into `plugins/`.
+3. Start the server to generate config.
+4. Configure `config.yml`, `currencies.yml`, and `messages.yml`.
+5. Restart after changing storage backend or currencies.
 
-## Configuration
-### config.yml
-```yaml
-language: es
-storage:
-  type: yaml # yaml (implemented), sqlite/mysql/h2/mongodb (planned)
-```
-
-### currencies.yml
+## Currencies
+`currencies.yml`:
 ```yaml
 currencies:
   crystals:
     enabled: true
-    name: Cristales
+    name: Crystals
     symbol: "✦"
-    singular: cristal
-    plural: cristales
+    singular: crystal
+    plural: crystals
     decimals: 0
     starting-balance: 0
-    max-balance: 999999999
+    max-balance: 1000000000
   tokens:
     enabled: true
     name: Tokens
@@ -53,66 +43,117 @@ currencies:
     singular: token
     plural: tokens
     decimals: 2
-    starting-balance: 0
-    max-balance: 999999999
+    starting-balance: 10
+    max-balance: 100000000
 ```
-IDs are lowercase identifiers and are used by commands and the API. Decimal precision is limited to 0–8. Balances are represented as `BigDecimal` in the API and persisted as decimal strings to avoid floating-point rounding.
-
-### messages.yml
-Messages support `{player}`, `{currency}`, `{symbol}`, `{amount}`, `{balance}`, and `{prefix}`.
+IDs are lowercase identifiers. Precision is 0–8. Values are stored as decimal text; API uses `BigDecimal`. Disabled currencies preserve balances but reject operations.
 
 ## Commands
-This initial implementation exposes:
-- `/ecx balance [currency]` — your wallet.
-- `/ecx balance <player> [currency]` — inspect another player's wallet (permission required).
-- `/ecx reload` — reload configuration (permission required).
+- `/ecx balance [currency]` — your balance (default: crystals).
+- `/ecx balance <player> [currency]` — view online player's balance.
+- `/ecx reload` — reload config/messages/currencies (admin).
 - `/ecx help`
 
-Permission: `economyexpand.command`; administration: `economyexpand.admin`.
-
-## Developer API
-API classes are in `com.bruno.economyexpand.api`. Obtain the plugin instance from the plugin manager, then call `getEconomy()`.
-
-```java
-EconomyExpandNK economyPlugin = (EconomyExpandNK)
-    Server.getInstance().getPluginManager().getPlugin("EconomyExpandNK");
-SecondaryEconomy economy = economyPlugin.getEconomy();
-
-BigDecimal current = economy.getBalance(player.getUniqueId(), "crystals");
-economy.deposit(player.getUniqueId(), "crystals", new BigDecimal("25"));
-economy.withdraw(player.getUniqueId(), "crystals", new BigDecimal("5"));
-economy.setBalance(player.getUniqueId(), "crystals", BigDecimal.ZERO);
-economy.transfer(player.getUniqueId(), target.getUniqueId(), "crystals",
-    new BigDecimal("10"));
-```
-
-### API notes
-- Currency IDs are case-insensitive.
-- Invalid, negative or zero transaction amounts are rejected (setBalance accepts zero).
-- Deposits/withdrawals are validated against configured maximum balances.
-- Transfer checks both wallets before applying the operation.
-- API operations are synchronous in this version; call them on the server thread.
-- For integration projects, declare EconomyExpandNK as `provided` and do not shade its API into your plugin.
-
-Maven dependency for a local/installed artifact:
-```xml
-<dependency>
-  <groupId>com.bruno</groupId>
-  <artifactId>economyexpandnk</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
-  <scope>provided</scope>
-</dependency>
-```
-There is no published Maven repository yet; developers can build/install locally with `mvn install`.
+Permissions: `economyexpand.command` (everyone), `economyexpand.admin` (OP), `economyexpand.balance.others` (OP).
 
 ## Storage
-YAML is the active storage provider. SQLite, H2, MySQL and MongoDB are planned in the provider architecture; do not select them yet. SQL and Mongo configuration will include host/database/credentials, pool settings and safe shutdown. Never commit credentials.
+Select provider in `config.yml`. Back up data before changing providers. No automatic migration between storage providers is currently provided; manually migrate/keep backups.
+
+### YAML
+```yaml
+storage:
+  type: yaml
+```
+Wallets stored in `wallets.yml`.
+
+### SQLite
+```yaml
+storage:
+  type: sqlite
+  sql:
+    sqlite-file: wallets.db
+```
+
+### H2
+```yaml
+storage:
+  type: h2
+  sql:
+    h2-file: wallets-h2
+```
+
+### MySQL
+```yaml
+storage:
+  type: mysql
+  sql:
+    mysql:
+      host: 127.0.0.1
+      port: 3306
+      database: economyexpand
+      username: economyexpand
+      password: "replace-this"
+      use-ssl: false
+```
+Create the database and grant table/data permissions first.
+
+### MongoDB
+```yaml
+storage:
+  type: mongodb
+  mongodb:
+    uri: mongodb://127.0.0.1:27017
+    database: economyexpand
+    collection: wallets
+```
+For production use authenticated TLS URI settings. Wallet balances are stored as strings.
+
+## Developer API
+API package: `com.bruno.economyexpand.api`.
+```java
+EconomyExpandNK plugin = (EconomyExpandNK) Server.getInstance()
+    .getPluginManager().getPlugin("EconomyExpandNK");
+SecondaryEconomy economy = plugin.getEconomy();
+
+BigDecimal wallet = economy.getBalance(player.getUniqueId(), "crystals");
+boolean ok = economy.deposit(player.getUniqueId(), "crystals", new BigDecimal("20"));
+economy.withdraw(player.getUniqueId(), "crystals", new BigDecimal("3"));
+economy.setBalance(player.getUniqueId(), "crystals", BigDecimal.ZERO);
+economy.transfer(player.getUniqueId(), recipient.getUniqueId(), "crystals",
+    new BigDecimal("7"));
+Currency currency = economy.getCurrency("crystals");
+String display = currency.getSymbol() + currency.format(wallet);
+```
+
+### API semantics
+- IDs are case-insensitive.
+- `getBalance(UUID, id)` does not create a row; returns the currency starting balance for an uninitialized wallet.
+- Amounts for deposit/withdraw/transfer must be positive; setBalance allows zero.
+- Amounts are rounded down to currency precision.
+- Max-balance applies to deposit, set and transfer receiver.
+- Transfer rejects self-transfer and insufficient funds.
+- Calls are synchronous; invoke from the server/main thread.
+- Storage failures may throw `IllegalStateException`; integration code should handle them.
+- Avoid shading the API into your plugin; declare it as provided.
+
+### Maven
+Build/install locally with `mvn clean install` then:
+```xml
+<dependency>
+  <groupId>com.bruno</groupId><artifactId>economyexpandnk</artifactId>
+  <version>1.0.0-SNAPSHOT</version><scope>provided</scope>
+</dependency>
+```
+No public Maven repository is configured yet.
+
+## Language
+Edit `messages.yml` (UTF-8). Supported placeholders: `{player}`, `{currency}`, `{symbol}`, `{amount}`, `{balance}`, `{prefix}`.
 
 ## Build
-```bash
-mvn clean package
-```
-Output: `target/EconomyExpandNK-1.0.0-SNAPSHOT.jar`. GitHub Actions runs on pushes and pull requests and publishes the JAR as an artifact.
+`mvn clean package`; artifact is `target/EconomyExpandNK-1.0.0-SNAPSHOT.jar`. Actions uploads the JAR artifact on push/PR.
+
+## EconomyAPI compatibility
+EconomyAPI and EconomyExpandNK use separate wallets. EconomyAPI's `myMoney/addMoney/reduceMoney/setMoney` continue to refer to its main currency. This plugin is not an EconomyAPI bridge; use its own API to access secondary currencies.
 
 ## License
-MIT. Redistribution and forks are permitted, provided the copyright and license notice are retained. Original author: **BrunoJaegerK**.
+MIT. Redistribution and derivative forks are permitted with the original copyright and license notice retained. Original author: BrunoJaegerK.
