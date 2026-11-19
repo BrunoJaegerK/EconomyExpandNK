@@ -153,7 +153,7 @@ No public Maven repository is configured yet.
 Edit `messages.yml` (UTF-8). Supported placeholders: `{player}`, `{currency}`, `{symbol}`, `{amount}`, `{balance}`, `{prefix}`.
 
 ## Build
-`mvn clean package`; artifact is `target/EconomyExpandNK-1.0.0-SNAPSHOT.jar`. Actions uploads the JAR artifact on push/PR.
+`mvn clean package`; artifact is `target/economyexpandnk-1.0.0-SNAPSHOT.jar`. Actions uploads the JAR artifact on push/PR.
 
 ## EconomyAPI compatibility
 EconomyAPI and EconomyExpandNK use separate wallets. EconomyAPI's `myMoney/addMoney/reduceMoney/setMoney` continue to refer to its main currency. This plugin is not an EconomyAPI bridge; use its own API to access secondary currencies.
