@@ -12,7 +12,7 @@ EconomyExpandNK funciona junto a [EconomyAPI](https://cloudburstmc.org/resources
 - Saldos vinculados a UUID.
 - Comandos de consulta, transferencia y administración.
 - API Java para otros plugins.
-- Almacenamiento MySQL (predeterminado), SQLite, H2, MongoDB y YAML.
+- Almacenamiento MySQL local (predeterminado), SQLite, H2, MongoDB y YAML.
 - Mensajes personalizables en `messages.yml`.
 - Recarga de configuración y monedas.
 - GitHub Actions para compilar automáticamente.
@@ -21,21 +21,41 @@ EconomyExpandNK funciona junto a [EconomyAPI](https://cloudburstmc.org/resources
 
 - Servidor Nukkit compatible con Cloudburst.
 - Java 8 o superior (el workflow de compilación utiliza Java 17).
-- MySQL recomendado para la configuración predeterminada. EconomyAPI es opcional y puede permanecer instalado.
+- MySQL o MariaDB local escuchando en `127.0.0.1:3306`. EconomyAPI es opcional y puede permanecer instalado.
 
 ## Instalación
 
 1. Descarga el JAR compilado desde **Actions** o Releases.
 2. Coloca el archivo en la carpeta `plugins/`.
-3. Inicia el servidor para generar los archivos de configuración.
-4. Configura MySQL y las monedas en `config.yml` y `currencies.yml`.
-5. Reinicia el servidor después de cambiar el proveedor de almacenamiento.
+3. Crea la base de datos MySQL indicada abajo.
+4. Inicia el servidor para generar los archivos de configuración.
+5. Si tu MySQL usa credenciales distintas a las predeterminadas, edita `plugins/EconomyExpandNK/config.yml`.
+6. Reinicia el servidor después de cambiar el proveedor de almacenamiento.
 
 ## Configuración
 
-### `config.yml`
+### MySQL local (predeterminado)
 
-MySQL es el proveedor predeterminado. Crea la base de datos y un usuario con permisos para crear/leer/escribir tablas antes de iniciar el plugin.
+El plugin intenta conectarse por defecto a MySQL en el mismo equipo/entorno donde se ejecuta Nukkit:
+
+- Host: `127.0.0.1`
+- Puerto: `3306`
+- Base de datos: `economyexpand`
+- Usuario: `root`
+- Contraseña: vacía
+- SSL: desactivado
+
+Crea la base de datos antes de iniciar el plugin:
+
+```sql
+CREATE DATABASE economyexpand
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+```
+
+Si tu instalación local de MySQL/MariaDB tiene contraseña para `root`, modifica `username` y `password` en el archivo generado. No uses una cuenta root sin contraseña en un servidor expuesto a Internet; crea un usuario dedicado con permisos únicamente sobre la base `economyexpand`.
+
+### `config.yml`
 
 ```yaml
 language: es
@@ -47,8 +67,8 @@ storage:
       host: 127.0.0.1
       port: 3306
       database: economyexpand
-      username: economyexpand
-      password: "change-me"
+      username: root
+      password: ""
       use-ssl: false
   mongodb:
     uri: mongodb://127.0.0.1:27017
@@ -133,18 +153,7 @@ Selecciona el proveedor en `config.yml`. **Haz una copia de seguridad antes de c
 
 ### MySQL (predeterminado)
 
-```yaml
-storage:
-  type: mysql
-  sql:
-    mysql:
-      host: 127.0.0.1
-      port: 3306
-      database: economyexpand
-      username: economyexpand
-      password: "change-me"
-      use-ssl: false
-```
+Usa el MySQL/MariaDB local con los parámetros descritos arriba. La base de datos `economyexpand` debe existir antes del arranque.
 
 ### SQLite
 
