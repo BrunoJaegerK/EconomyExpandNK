@@ -31,9 +31,9 @@ public class EconomyCommand extends Command {
         sender.sendMessage(plugin.render(target==sender?"balance-self":"balance",v));
     }
     private void transaction(CommandSender sender,String[] args,String action){
-        if(!(sender instanceof Player)){sender.sendMessage("Este comando debe ejecutarse dentro del juego.");return;}
-        Player source=(Player)sender;
         boolean pay=action.equals("pay");
+        Player source=sender instanceof Player?(Player)sender:null;
+        if(pay&&source==null){sender.sendMessage("Este comando debe ejecutarse dentro del juego.");return;}
         if(!pay&&!sender.hasPermission("economyexpand.admin")){sender.sendMessage(plugin.message("no-permission"));return;}
         if(args.length<3){sender.sendMessage(plugin.message("usage"));return;}
         Player target=plugin.getServer().getPlayer(args[1]);if(target==null){sender.sendMessage(plugin.message("error"));return;}
@@ -46,7 +46,7 @@ public class EconomyCommand extends Command {
         else if(action.equals("take"))success=plugin.getEconomy().withdraw(target.getUniqueId(),id,amount);
         else success=plugin.getEconomy().setBalance(target.getUniqueId(),id,amount);
         if(!success){sender.sendMessage(plugin.message("error"));return;}
-        Map<String,String> values=new HashMap<>();values.put("player",target.getName());values.put("sender",source.getName());values.put("symbol",c.getSymbol());values.put("amount",c.format(amount));values.put("currency",c.getName());
+        Map<String,String> values=new HashMap<>();values.put("player",target.getName());values.put("sender",source==null?sender.getName():source.getName());values.put("symbol",c.getSymbol());values.put("amount",c.format(amount));values.put("currency",c.getName());
         sender.sendMessage(plugin.render(pay?"paid":"transaction-success",values));
         if(pay)target.sendMessage(plugin.render("received",values));
     }
