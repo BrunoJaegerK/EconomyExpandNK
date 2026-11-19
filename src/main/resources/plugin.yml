@@ -4,6 +4,7 @@ version: "1.0.0"
 api: ["1.0.13"]
 author: BrunoJaegerK
 description: Secondary configurable multi-currency economy
+softdepend: [PlaceholderAPI]
 permissions:
   economyexpand.command:
     default: true
