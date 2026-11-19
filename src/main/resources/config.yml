@@ -1,12 +1,11 @@
 language: es
 default-currency: crystals
 
-# MySQL local por defecto.
-# En instalaciones locales tipo XAMPP/WAMP suele usarse root sin contraseña.
-# Si tu MySQL tiene otra credencial, cambia username y password.
-# Supported: mysql | sqlite | h2 | mongodb | yaml
+# H2 integrado: no requiere instalar ni configurar un servidor de base de datos.
+# La base se crea automáticamente dentro de plugins/EconomyExpandNK/.
+# Supported: h2 | mysql | sqlite | mongodb | yaml
 storage:
-  type: mysql
+  type: h2
   sql:
     sqlite-file: wallets.db
     h2-file: wallets-h2
