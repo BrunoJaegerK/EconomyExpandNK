@@ -7,5 +7,5 @@ usage: "§e/ecx balance [moneda] | /ecx pay <jugador> <cantidad> [moneda] | /ecx
 reloaded: "§aConfiguración recargada."
 error: "§cNo se pudo completar la operación."
 paid: "§aEnviaste {symbol}{amount} {currency} a {player}."
-received: "§aRecibiste {symbol}{amount} {currency} de {player}."
+received: "§aRecibiste {symbol}{amount} {currency} de {sender}."
 transaction-success: "§aOperación completada: {symbol}{amount} {currency} para {player}."
