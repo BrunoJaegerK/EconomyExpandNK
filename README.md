@@ -52,6 +52,9 @@ IDs are lowercase identifiers. Precision is 0–8. Values are stored as decimal 
 - `/ecx balance [currency]` — your balance (default: crystals).
 - `/ecx balance <player> [currency]` — view online player's balance.
 - `/ecx reload` — reload config/messages/currencies (admin).
+- `/ecx currencies` — list configured currencies.
+- `/ecx pay <player> <amount> [currency]` — transfer to an online player.
+- `/ecx give|take|set <player> <amount> [currency]` — administrator wallet management.
 - `/ecx help`
 
 Permissions: `economyexpand.command` (everyone), `economyexpand.admin` (OP), `economyexpand.balance.others` (OP).
