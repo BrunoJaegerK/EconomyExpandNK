@@ -164,6 +164,25 @@ storage:
 
 Los datos de YAML se guardan en `wallets.yml`. Para producción, configura autenticación y TLS en tu base de datos.
 
+## Placeholders (PlaceholderAPI de Nukkit)
+
+EconomyExpandNK se integra opcionalmente con **PlaceholderAPI de CreeperFace para Nukkit** (no con la edición de Bukkit/Paper). Instala también ese plugin en el servidor. Si no está instalado, EconomyExpandNK funciona normalmente y simplemente omite el registro de placeholders.
+
+Los placeholders de saldo son sensibles al jugador que visualiza el texto y se generan automáticamente para cada moneda habilitada en `currencies.yml`. Para una moneda con ID `crystals`:
+
+| Placeholder | Resultado |
+|---|---|
+| `%economyexpand_balance%` | Saldo de la moneda predeterminada del jugador. |
+| `%economyexpand_balance_crystals%` | Saldo numérico de cristales. |
+| `%economyexpand_balance_formatted_crystals%` | Símbolo seguido del saldo, por ejemplo `✦150`. |
+| `%economyexpand_symbol_crystals%` | Símbolo configurado para cristales. |
+| `%economyexpand_name_crystals%` | Nombre configurado para cristales. |
+| `%economyexpand_total_currencies%` | Cantidad de monedas habilitadas. |
+
+Si añades una moneda llamada `tokens`, también estarán disponibles automáticamente `%economyexpand_balance_tokens%`, `%economyexpand_balance_formatted_tokens%`, `%economyexpand_symbol_tokens%` y `%economyexpand_name_tokens%`.
+
+El sufijo usa el ID de la moneda en minúsculas; los caracteres que no sean letras, números o guion bajo se convierten en guion bajo. Después de añadir monedas nuevas, reinicia el servidor para registrar sus placeholders.
+
 ## API para desarrolladores
 
 Paquete: `com.bruno.economyexpand.api`
