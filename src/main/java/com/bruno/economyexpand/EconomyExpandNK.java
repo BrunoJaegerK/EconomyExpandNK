@@ -28,7 +28,8 @@ public class EconomyExpandNK extends PluginBase {
         getLogger().info("EconomyExpandNK habilitado ("+currencies.size()+" monedas, storage="+getConfig().getSection("storage").getString("type","yaml")+")");
     }
     private WalletStorage createStorage() throws Exception {
-        cn.nukkit.utils.ConfigSection storageCfg=getConfig().getSection("storage");\n        String type=storageCfg.getString("type","yaml").toLowerCase(Locale.ROOT);\n        cn.nukkit.utils.ConfigSection sqlCfg=storageCfg.getSection("sql");\n        cn.nukkit.utils.ConfigSection mysqlCfg=sqlCfg.getSection("mysql");\n        cn.nukkit.utils.ConfigSection mongoCfg=storageCfg.getSection("mongodb");
+        cn.nukkit.utils.ConfigSection storageCfg=getConfig().getSection("storage");
+        String type=storageCfg.getString("type","yaml").toLowerCase(Locale.ROOT);\n        cn.nukkit.utils.ConfigSection sqlCfg=storageCfg.getSection("sql");\n        cn.nukkit.utils.ConfigSection mysqlCfg=sqlCfg.getSection("mysql");\n        cn.nukkit.utils.ConfigSection mongoCfg=storageCfg.getSection("mongodb");
         if("yaml".equals(type))return new YamlWalletStorage(getDataFolder()+"/wallets.yml");
         if("sqlite".equals(type)){
             String file=sqlCfg.getString("sqlite-file","wallets.db");
