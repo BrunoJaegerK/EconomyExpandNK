@@ -11,6 +11,6 @@ usage: "§eComandos: §f/ecx balance [moneda] | /ecx balance <jugador> [moneda] 
 reloaded: "§aConfiguración, monedas y mensajes recargados."
 error: "§cNo se pudo completar la operación."
 transaction-failed: "§cOperación rechazada. Revisa saldo, límites y cantidad ({currency})."
-paid: "§aEnviaste §f{symbol}{amount} §7{currency}§a a §f{player§a."
+paid: "§aEnviaste §f{symbol}{amount} §7{currency}§a a §f{player}§a."
 received: "§aRecibiste §f{symbol}{amount} §7{currency}§a de §f{sender}§a."
 transaction-success: "§aOperación completada: §f{symbol}{amount} §7{currency}§a para §f{player}§a."
