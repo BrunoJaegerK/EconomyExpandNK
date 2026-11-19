@@ -18,7 +18,7 @@ public class EconomyCommand extends Command {
             plugin.reloadFiles();sender.sendMessage(plugin.message("reloaded"));return true;
         }
         if(args[0].equalsIgnoreCase("balance")||args[0].equalsIgnoreCase("bal")){
-            Player target;String currency="crystals";
+            Player target;String currency=plugin.defaultCurrency();
             if(sender instanceof Player){target=(Player)sender;if(args.length>1)currency=args[1];}
             else {if(args.length<2){sender.sendMessage(plugin.message("usage"));return true;}target=plugin.getServer().getPlayer(args[1]);if(target==null){sender.sendMessage(plugin.message("error"));return true;}if(args.length>2)currency=args[2];}
             if(target!=sender&&!sender.hasPermission("economyexpand.balance.others")){sender.sendMessage(plugin.message("no-permission"));return true;}
