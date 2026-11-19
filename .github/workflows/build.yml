@@ -26,4 +26,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: EconomyExpandNK
-          path: target/EconomyExpandNK-*.jar
+          path: target/economyexpandnk-*.jar
