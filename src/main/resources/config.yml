@@ -1,3 +1,17 @@
 language: es
 storage:
-  type: yaml
+  type: yaml # yaml | sqlite | h2 | mysql | mongodb
+  sql:
+    sqlite-file: wallets.db
+    h2-file: wallets-h2
+    mysql:
+      host: 127.0.0.1
+      port: 3306
+      database: economyexpand
+      username: root
+      password: ""
+      use-ssl: false
+  mongodb:
+    uri: mongodb://127.0.0.1:27017
+    database: economyexpand
+    collection: wallets
