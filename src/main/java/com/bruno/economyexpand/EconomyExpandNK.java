@@ -25,7 +25,7 @@ public class EconomyExpandNK extends PluginBase {
         instance=this;saveDefaultConfig();saveResource("currencies.yml",false);saveResource("messages.yml",false);reloadFiles();
         try {storage=createStorage();} catch(Exception ex){getLogger().error("No se pudo inicializar el almacenamiento",ex);getServer().getPluginManager().disablePlugin(this);return;}
         economy=new EconomyImpl();getServer().getCommandMap().register("economyexpand",new EconomyCommand(this));
-        getLogger().info("EconomyExpandNK habilitado ("+currencies.size()+" monedas, storage="+getConfig().getSection("storage").getString("type","mysql")+")");
+        getLogger().info("EconomyExpandNK habilitado ("+currencies.size()+" monedas, storage="+getConfig().getSection("storage").getString("type","h2")+")");
     }
     private WalletStorage createStorage() throws Exception {
         cn.nukkit.utils.ConfigSection storageCfg=getConfig().getSection("storage");
