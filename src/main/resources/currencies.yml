@@ -1,0 +1,19 @@
+currencies:
+  crystals:
+    enabled: true
+    name: Cristales
+    symbol: "✦"
+    singular: cristal
+    plural: cristales
+    decimals: 0
+    starting-balance: 0
+    max-balance: 999999999
+  tokens:
+    enabled: true
+    name: Tokens
+    symbol: "T"
+    singular: token
+    plural: tokens
+    decimals: 2
+    starting-balance: 0
+    max-balance: 999999999
