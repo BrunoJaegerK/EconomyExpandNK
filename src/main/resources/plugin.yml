@@ -4,11 +4,6 @@ version: "1.0.0"
 api: ["1.0.13"]
 author: BrunoJaegerK
 description: Secondary configurable multi-currency economy
-commands:
-  ecx:
-    description: EconomyExpandNK commands
-    usage: "/ecx help"
-    aliases: [economyexpand, ecx]
 permissions:
   economyexpand.command:
     default: true
