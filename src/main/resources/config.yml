@@ -1,7 +1,9 @@
 language: es
 default-currency: crystals
 
-# MySQL is the default and recommended storage provider.
+# MySQL local por defecto.
+# En instalaciones locales tipo XAMPP/WAMP suele usarse root sin contraseña.
+# Si tu MySQL tiene otra credencial, cambia username y password.
 # Supported: mysql | sqlite | h2 | mongodb | yaml
 storage:
   type: mysql
@@ -12,8 +14,8 @@ storage:
       host: 127.0.0.1
       port: 3306
       database: economyexpand
-      username: economyexpand
-      password: "change-me"
+      username: root
+      password: ""
       use-ssl: false
   mongodb:
     uri: mongodb://127.0.0.1:27017
