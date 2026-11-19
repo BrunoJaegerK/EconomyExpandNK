@@ -1,41 +1,76 @@
 # EconomyExpandNK
-**Secondary multi-currency economy for Nukkit** by **BrunoJaegerK**.
 
-EconomyExpandNK runs alongside [EconomyAPI](https://cloudburstmc.org/resources/economyapi.14/) without replacing its primary balance. It provides configurable secondary wallets and its own storage.
+**Economía secundaria, configurable y multimoneda para Nukkit.**  
+Desarrollado por **BrunoJaegerK**.
 
-## Features
-- Configurable currencies in `currencies.yml`: IDs, display name, symbol, singular/plural, precision, starting and maximum balance.
-- UUID-based wallets; API supports offline UUIDs.
-- Balance, deposit, withdrawal, set and transfer methods.
-- YAML, SQLite, H2, MySQL and MongoDB storage.
-- UTF-8 configurable messages.
-- GitHub Actions Maven build.
+EconomyExpandNK funciona junto a [EconomyAPI](https://cloudburstmc.org/resources/economyapi.14/) sin reemplazar su saldo principal. Permite crear monedas adicionales, administrar balances y conectar distintos sistemas de almacenamiento.
 
-## Requirements
-- Cloudburst Nukkit API compatible server.
-- Java 8+ runtime (CI builds with Java 17).
-- EconomyAPI is optional and can remain installed. EconomyExpandNK neither intercepts its commands nor changes its balances.
+## Características
 
-## Install
-1. Download the JAR from the Actions artifact/release.
-2. Put it into `plugins/`.
-3. Start the server to generate config.
-4. Configure `config.yml`, `currencies.yml`, and `messages.yml`.
-5. Restart after changing storage backend or currencies.
+- Multimoneda configurable desde `currencies.yml`.
+- Nombre, símbolo, singular/plural, decimales y límites configurables por moneda.
+- Saldos vinculados a UUID.
+- Comandos de consulta, transferencia y administración.
+- API Java para otros plugins.
+- Almacenamiento MySQL (predeterminado), SQLite, H2, MongoDB y YAML.
+- Mensajes personalizables en `messages.yml`.
+- Recarga de configuración y monedas.
+- GitHub Actions para compilar automáticamente.
 
-## Currencies
-`currencies.yml`:
+## Requisitos
+
+- Servidor Nukkit compatible con Cloudburst.
+- Java 8 o superior (el workflow de compilación utiliza Java 17).
+- MySQL recomendado para la configuración predeterminada. EconomyAPI es opcional y puede permanecer instalado.
+
+## Instalación
+
+1. Descarga el JAR compilado desde **Actions** o Releases.
+2. Coloca el archivo en la carpeta `plugins/`.
+3. Inicia el servidor para generar los archivos de configuración.
+4. Configura MySQL y las monedas en `config.yml` y `currencies.yml`.
+5. Reinicia el servidor después de cambiar el proveedor de almacenamiento.
+
+## Configuración
+
+### `config.yml`
+
+MySQL es el proveedor predeterminado. Crea la base de datos y un usuario con permisos para crear/leer/escribir tablas antes de iniciar el plugin.
+
+```yaml
+language: es
+default-currency: crystals
+storage:
+  type: mysql
+  sql:
+    mysql:
+      host: 127.0.0.1
+      port: 3306
+      database: economyexpand
+      username: economyexpand
+      password: "change-me"
+      use-ssl: false
+  mongodb:
+    uri: mongodb://127.0.0.1:27017
+    database: economyexpand
+    collection: wallets
+```
+
+### `currencies.yml`
+
+Puedes añadir cuantas monedas necesites. El ID se usa en comandos y API; el símbolo se muestra antes de cada cantidad.
+
 ```yaml
 currencies:
   crystals:
     enabled: true
-    name: Crystals
+    name: Cristales
     symbol: "✦"
-    singular: crystal
-    plural: crystals
+    singular: cristal
+    plural: cristales
     decimals: 0
     starting-balance: 0
-    max-balance: 1000000000
+    max-balance: 999999999
   tokens:
     enabled: true
     name: Tokens
@@ -43,49 +78,61 @@ currencies:
     singular: token
     plural: tokens
     decimals: 2
-    starting-balance: 10
-    max-balance: 100000000
-```
-IDs are lowercase identifiers. Precision is 0–8. Values are stored as decimal text; API uses `BigDecimal`. Disabled currencies preserve balances but reject operations.
-
-## Commands
-- `/ecx balance [currency]` — your balance (default: crystals).
-- `/ecx balance <player> [currency]` — view online player's balance.
-- `/ecx reload` — reload config/messages/currencies (admin).
-- `/ecx currencies` — list configured currencies.
-- `/ecx pay <player> <amount> [currency]` — transfer to an online player.
-- `/ecx give|take|set <player> <amount> [currency]` — administrator wallet management.
-- `/ecx help`
-
-Permissions: `economyexpand.command` (everyone), `economyexpand.admin` (OP), `economyexpand.balance.others` (OP).
-
-## Storage
-Select provider in `config.yml`. Back up data before changing providers. No automatic migration between storage providers is currently provided; manually migrate/keep backups.
-
-### YAML
-```yaml
-storage:
-  type: yaml
-```
-Wallets stored in `wallets.yml`.
-
-### SQLite
-```yaml
-storage:
-  type: sqlite
-  sql:
-    sqlite-file: wallets.db
+    starting-balance: 0
+    max-balance: 999999999
 ```
 
-### H2
-```yaml
-storage:
-  type: h2
-  sql:
-    h2-file: wallets-h2
+- `enabled`: habilita o deshabilita la moneda.
+- `name`: nombre visible.
+- `symbol`: prefijo que se imprime delante de las cantidades.
+- `singular` / `plural`: formas del nombre.
+- `decimals`: precisión de 0 a 8.
+- `starting-balance`: saldo inicial de una wallet nueva.
+- `max-balance`: saldo máximo permitido.
+
+Deshabilitar una moneda no elimina los balances guardados. Los IDs son insensibles a mayúsculas/minúsculas. Las cantidades se normalizan a la precisión configurada.
+
+## Comandos
+
+| Comando | Descripción |
+|---|---|
+| `/ecx balance [moneda]` | Consulta tu saldo. |
+| `/ecx bal [moneda]` / `/ecx money [moneda]` | Alias de balance. |
+| `/ecx balance <jugador> [moneda]` | Consulta el saldo de un jugador conectado. |
+| `/ecx currencies` | Lista las monedas habilitadas y sus símbolos. |
+| `/ecx pay <jugador> <cantidad> [moneda]` | Transfiere saldo a otro jugador conectado. |
+| `/ecx give <jugador> <cantidad> [moneda]` / `add` | Añade saldo. |
+| `/ecx take <jugador> <cantidad> [moneda]` / `remove`, `reduce`, `withdraw` | Retira saldo. |
+| `/ecx set <jugador> <cantidad> [moneda]` | Establece el saldo exacto. |
+| `/ecx reload` | Recarga configuración, monedas y mensajes. |
+| `/ecx help` | Muestra la ayuda. |
+
+También puedes usar `/economyexpand`, `/ec` como alias del comando principal.
+
+**Permisos**
+
+- `economyexpand.command`: acceso a comandos de usuario (predeterminado: todos).
+- `economyexpand.balance.others`: consultar el saldo de otros (predeterminado: OP).
+- `economyexpand.admin`: give, take/reduce, set y reload (predeterminado: OP).
+
+Ejemplos:
+```
+/ecx balance
+/ecx balance tokens
+/ecx balance Steve crystals
+/ecx pay Alex 25 crystals
+/ecx give Alex 100 tokens
+/ecx reduce Alex 15 crystals
+/ecx set Alex 500 crystals
+/ecx currencies
 ```
 
-### MySQL
+## Almacenamiento
+
+Selecciona el proveedor en `config.yml`. **Haz una copia de seguridad antes de cambiar de backend**; el plugin no migra automáticamente los datos entre proveedores.
+
+### MySQL (predeterminado)
+
 ```yaml
 storage:
   type: mysql
@@ -95,12 +142,30 @@ storage:
       port: 3306
       database: economyexpand
       username: economyexpand
-      password: "replace-this"
+      password: "change-me"
       use-ssl: false
 ```
-Create the database and grant table/data permissions first.
+
+### SQLite
+
+```yaml
+storage:
+  type: sqlite
+  sql:
+    sqlite-file: wallets.db
+```
+
+### H2
+
+```yaml
+storage:
+  type: h2
+  sql:
+    h2-file: wallets-h2
+```
 
 ### MongoDB
+
 ```yaml
 storage:
   type: mongodb
@@ -109,54 +174,83 @@ storage:
     database: economyexpand
     collection: wallets
 ```
-For production use authenticated TLS URI settings. Wallet balances are stored as strings.
 
-## Developer API
-API package: `com.bruno.economyexpand.api`.
+### YAML
+
+```yaml
+storage:
+  type: yaml
+```
+
+Los datos de YAML se guardan en `wallets.yml`. Para producción, configura autenticación y TLS en tu base de datos.
+
+## API para desarrolladores
+
+Paquete: `com.bruno.economyexpand.api`
+
 ```java
 EconomyExpandNK plugin = (EconomyExpandNK) Server.getInstance()
     .getPluginManager().getPlugin("EconomyExpandNK");
 SecondaryEconomy economy = plugin.getEconomy();
 
-BigDecimal wallet = economy.getBalance(player.getUniqueId(), "crystals");
-boolean ok = economy.deposit(player.getUniqueId(), "crystals", new BigDecimal("20"));
+BigDecimal balance = economy.getBalance(player.getUniqueId(), "crystals");
+economy.deposit(player.getUniqueId(), "crystals", new BigDecimal("20"));
 economy.withdraw(player.getUniqueId(), "crystals", new BigDecimal("3"));
 economy.setBalance(player.getUniqueId(), "crystals", BigDecimal.ZERO);
-economy.transfer(player.getUniqueId(), recipient.getUniqueId(), "crystals",
+economy.transfer(player.getUniqueId(), target.getUniqueId(), "crystals",
     new BigDecimal("7"));
+
 Currency currency = economy.getCurrency("crystals");
-String display = currency.getSymbol() + currency.format(wallet);
+String display = currency.getSymbol() + currency.format(balance);
 ```
 
-### API semantics
-- IDs are case-insensitive.
-- `getBalance(UUID, id)` does not create a row; returns the currency starting balance for an uninitialized wallet.
-- Amounts for deposit/withdraw/transfer must be positive; setBalance allows zero.
-- Amounts are rounded down to currency precision.
-- Max-balance applies to deposit, set and transfer receiver.
-- Transfer rejects self-transfer and insufficient funds.
-- Calls are synchronous; invoke from the server/main thread.
-- Storage failures may throw `IllegalStateException`; integration code should handle them.
-- Avoid shading the API into your plugin; declare it as provided.
+### Comportamiento de la API
+
+- Los IDs de moneda no distinguen mayúsculas/minúsculas.
+- `getBalance(UUID, id)` devuelve el saldo inicial configurado si la wallet no existe todavía.
+- `deposit`, `withdraw` y `transfer` requieren cantidades positivas; `setBalance` acepta cero.
+- Los importes se redondean hacia abajo a la precisión de la moneda.
+- Se aplican límites máximos al depósito, al saldo establecido y al destinatario de transferencias.
+- No permite transferencias a uno mismo ni saldo insuficiente.
+- Las llamadas son síncronas: usa la API desde el hilo principal del servidor.
+- Errores de almacenamiento pueden lanzar `IllegalStateException`; maneja excepciones al integrarla.
+- No empaquetes (shade) la API dentro de tu plugin; utiliza la dependencia como `provided`.
 
 ### Maven
-Build/install locally with `mvn clean install` then:
+
+Compila e instala localmente con `mvn clean install`, y declara la dependencia:
+
 ```xml
 <dependency>
-  <groupId>com.bruno</groupId><artifactId>economyexpandnk</artifactId>
-  <version>1.0.0-SNAPSHOT</version><scope>provided</scope>
+  <groupId>com.bruno</groupId>
+  <artifactId>economyexpandnk</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <scope>provided</scope>
 </dependency>
 ```
-No public Maven repository is configured yet.
 
-## Language
-Edit `messages.yml` (UTF-8). Supported placeholders: `{player}`, `{currency}`, `{symbol}`, `{amount}`, `{balance}`, `{prefix}`.
+Actualmente no se publica en un repositorio Maven remoto.
 
-## Build
-`mvn clean package`; artifact is `target/economyexpandnk-1.0.0-SNAPSHOT.jar`. Actions uploads the JAR artifact on push/PR.
+## Mensajes y traducción
 
-## EconomyAPI compatibility
-EconomyAPI and EconomyExpandNK use separate wallets. EconomyAPI's `myMoney/addMoney/reduceMoney/setMoney` continue to refer to its main currency. This plugin is not an EconomyAPI bridge; use its own API to access secondary currencies.
+Edita `messages.yml` (UTF-8). Se pueden personalizar el prefijo, los mensajes y los placeholders:
 
-## License
-MIT. Redistribution and derivative forks are permitted with the original copyright and license notice retained. Original author: BrunoJaegerK.
+`{player}`, `{sender}`, `{currency}`, `{symbol}`, `{amount}`, `{balance}`.
+
+## Compilación
+
+Requiere Maven:
+
+```bash
+mvn clean package
+```
+
+El JAR se genera en `target/economyexpandnk-1.0.0-SNAPSHOT.jar`. GitHub Actions compila el proyecto en cada push y pull request y publica el artefacto de compilación.
+
+## Compatibilidad con EconomyAPI
+
+EconomyAPI y EconomyExpandNK mantienen balances separados. Los comandos y API de EconomyAPI (`myMoney`, `addMoney`, `reduceMoney`, `setMoney`) continúan operando sobre la moneda principal de EconomyAPI. Este plugin no reemplaza ni intercepta esos balances; usa su propia API para las monedas secundarias.
+
+## Licencia
+
+Este proyecto se distribuye bajo la licencia **MIT**. Consulta el archivo [LICENSE](LICENSE). Se permite reutilizar, modificar y distribuir el software conservando el aviso de copyright y la licencia.
