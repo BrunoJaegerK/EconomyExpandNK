@@ -46,7 +46,7 @@ public class EconomyCommand extends Command {
         else if(action.equals("take"))success=plugin.getEconomy().withdraw(target.getUniqueId(),id,amount);
         else success=plugin.getEconomy().setBalance(target.getUniqueId(),id,amount);
         if(!success){sender.sendMessage(plugin.message("error"));return;}
-        Map<String,String> values=new HashMap<>();values.put("player",target.getName());values.put("symbol",c.getSymbol());values.put("amount",c.format(amount));values.put("currency",c.getName());
+        Map<String,String> values=new HashMap<>();values.put("player",target.getName());values.put("sender",source.getName());values.put("symbol",c.getSymbol());values.put("amount",c.format(amount));values.put("currency",c.getName());
         sender.sendMessage(plugin.render(pay?"paid":"transaction-success",values));
         if(pay)target.sendMessage(plugin.render("received",values));
     }
